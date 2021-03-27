@@ -1,22 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
-use App\Model\UserModel;
+use App\Interfaces\UserInterface;
 use League\Csv\Reader;
 
 /**
  * Class UsersService
  * @package App\Service
  */
-class UserManager
+class UserManager implements UserInterface
 {
-
     /**
      * @var string
      */
     private string $wallBoxLink;
-
+    /**
+     * @var array|string[]
+     */
+    private array $keys = ['id', 'name', 'surname', 'email', 'country', 'createAt', 'activateAt', 'chargerId'];
     /**
      * UsersService constructor.
      * @param string $wallBoxLink
@@ -26,22 +30,44 @@ class UserManager
         $this->wallBoxLink = $wallBoxLink;
     }
 
-
     /**
-     * @return \Iterator|\League\Csv\Modifier\MapIterator
+     * @param array|null $criteria
+     * @return array
      */
-    public function getAllUsers()
+    public function findAllUsers(?array $criteria = []): array
     {
-
-        $keys = ['id', 'name', 'surname', 'email', 'country', 'createAt', 'activateAt', 'chargerId'];
+        $users['items'] = [];
         $reader = Reader::createFromString(file_get_contents($this->wallBoxLink));
-        $r = $reader->stripBom(true)
-            ->addFilter(UserManager::filterByEmail($value))
-            ->fetchAssoc($keys, function ($value) {
-                return array_map('strtoupper', $value);
-            });
+        $result = $reader->fetchAssoc($this->keys);
 
-        return $r;
+        if (isset($criteria['country'])) {
+            $country = $criteria['country'];
+            foreach ($result as $row) {
+                if (in_array($row['country'],$country)) {
+                    array_push($users['items'], $row);
+                }
+            }
+        } else {
+            $users['items'] = $result;
+        }
+        return $users;
     }
 
+    /**
+     * @param int $id
+     * @return array
+     */
+    public function findOneUser(int $id): array
+    {
+        $user = [];
+        $reader = Reader::createFromString(file_get_contents($this->wallBoxLink));
+        $result = $reader->fetchAssoc($this->keys);
+        foreach ($result as $row) {
+            if($row['id'] == $id) {
+                $user = $row;
+                continue;
+            }
+        }
+        return $user;
+    }
 }

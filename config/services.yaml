@@ -30,7 +30,7 @@ services:
     App\Service\UserManager:
         arguments:
             $wallBoxLink: '%env(CSV_WALLBOX_LINK)%'
-        tags: ['app.service.usersservice']
+        tags: ['app.service.user_manager']
 
 
 
