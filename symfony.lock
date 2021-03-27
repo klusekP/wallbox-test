@@ -26,6 +26,9 @@
             "config/packages/fos_rest.yaml"
         ]
     },
+    "league/csv": {
+        "version": "8.2.3"
+    },
     "nelmio/api-doc-bundle": {
         "version": "3.0",
         "recipe": {

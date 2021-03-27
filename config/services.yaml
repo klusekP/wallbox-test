@@ -27,5 +27,12 @@ services:
         resource: '../src/Controller/'
         tags: ['controller.service_arguments']
 
+    App\Service\UserManager:
+        arguments:
+            $wallBoxLink: '%env(CSV_WALLBOX_LINK)%'
+        tags: ['app.service.usersservice']
+
+
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
