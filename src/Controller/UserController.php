@@ -10,9 +10,7 @@ use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\View\View;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-
 
 /**
  * Class UsersController
@@ -22,7 +20,6 @@ class UserController extends AbstractFOSRestController
 {
     /** @var UserInterface */
     private UserInterface $userInterface;
-
     /**
      * UserController constructor.
      * @param UserInterface $userInterface
@@ -31,8 +28,6 @@ class UserController extends AbstractFOSRestController
     {
         $this->userInterface = $userInterface;
     }
-
-
     /**
      * @Rest\Get("/users", name="get_all_users")
      * @param Request $request
@@ -43,7 +38,7 @@ class UserController extends AbstractFOSRestController
             $criteria = json_decode($request->getContent(), true);
             $data = $this->userInterface->findAllUsers($criteria);
             if (!$data) {
-                throw new NotFoundHttpException('User not found');
+                throw new NotFoundHttpException('Users not found');
             }
             return View::create($data, Response::HTTP_OK);
     }
@@ -57,7 +52,7 @@ class UserController extends AbstractFOSRestController
     {
         $data = $this->userInterface->findOneUser($id);
         if (!$data) {
-            throw new NotFoundHttpException('Not Found');
+            throw new NotFoundHttpException('User Not Found');
         }
         return View::create($data,Response::HTTP_OK);
     }

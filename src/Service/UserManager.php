@@ -13,14 +13,11 @@ use League\Csv\Reader;
  */
 class UserManager implements UserInterface
 {
+    private const KEYS = ['id', 'name', 'surname', 'email', 'country', 'createAt', 'activateAt', 'chargerId'];
     /**
      * @var string
      */
     private string $wallBoxLink;
-    /**
-     * @var array|string[]
-     */
-    private array $keys = ['id', 'name', 'surname', 'email', 'country', 'createAt', 'activateAt', 'chargerId'];
     /**
      * UsersService constructor.
      * @param string $wallBoxLink
@@ -33,17 +30,33 @@ class UserManager implements UserInterface
     /**
      * @param array|null $criteria
      * @return array
+     * @throws \Exception
      */
     public function findAllUsers(?array $criteria = []): array
     {
         $users['items'] = [];
         $reader = Reader::createFromString(file_get_contents($this->wallBoxLink));
-        $result = $reader->fetchAssoc($this->keys);
+        $result = $reader->fetchAssoc(self::KEYS);
 
-        if (isset($criteria['country'])) {
-            $country = $criteria['country'];
+        if (isset($criteria['country']) && isset($criteria['activation_length'])) {
             foreach ($result as $row) {
-                if (in_array($row['country'],$country)) {
+                $createAt = new \DateTime($row['createAt']);
+                $activateAt = new \DateTime($row['activateAt']);
+                if (in_array($row['country'], $criteria['country']) && $createAt->diff($activateAt)->days >= intval($criteria['activation_length'])) {
+                    array_push($users['items'], $row);
+                }
+            }
+        } elseif (isset($criteria['country'])) {
+            foreach ($result as $row) {
+                if (in_array($row['country'],$criteria['country'])) {
+                    array_push($users['items'], $row);
+                }
+            }
+        } elseif (isset($criteria['activation_length'])) {
+            foreach ($result as $row) {
+                $createAt = new \DateTime($row['createAt']);
+                $activateAt = new \DateTime($row['activateAt']);
+                if ($createAt->diff($activateAt)->days >= intval($criteria['activation_length'])) {
                     array_push($users['items'], $row);
                 }
             }
@@ -61,7 +74,7 @@ class UserManager implements UserInterface
     {
         $user = [];
         $reader = Reader::createFromString(file_get_contents($this->wallBoxLink));
-        $result = $reader->fetchAssoc($this->keys);
+        $result = $reader->fetchAssoc(self::KEYS);
         foreach ($result as $row) {
             if($row['id'] == $id) {
                 $user = $row;
